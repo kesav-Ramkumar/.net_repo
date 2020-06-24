@@ -1,0 +1,5 @@
+sonar.exclusions=/*.bin
+sonar.cs.vscoveragexml.reportsPaths=/.coveragexml
+sonar.projectBaseDir=C:/maas/**.MaaS
+sonar.projectKey=maas
+sonar.sources=.
