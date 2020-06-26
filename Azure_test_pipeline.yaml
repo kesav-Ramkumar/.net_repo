@@ -1,18 +1,22 @@
 pool:
-  name: Azure_test_Pipelines
+  vmImage: 'ubuntu-latest'
+  name: Azure Pipelines
   demands: java
+  
+variables:
+  BuildConfiguration: 'Release'
 
 steps:
 - task: DotNetCoreCLI@2
   displayName: Restore
   inputs:
     command: restore
-    projects: '$(Parameters.RestoreBuildProjects)'
+    projects: '**/*.csproj'
 
 - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
   displayName: 'Prepare analysis on SonarCloud'
   inputs:
-    SonarCloud: '$(Parameters.SonarCloud)'
+    SonarCloud: 'azure-sonar-connection'
     organization: kesavsonar
     scannerMode: CLI
     configFile: 'sonar-project.properties.xml'
@@ -20,7 +24,7 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Build
   inputs:
-    projects: '$(Parameters.RestoreBuildProjects)'
+    projects: '**/*.csproj'
     arguments: '--configuration $(BuildConfiguration)'
 
 - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
@@ -30,7 +34,7 @@ steps:
   displayName: Test
   inputs:
     command: test
-    projects: '$(Parameters.TestProjects)'
+    projects: '**/*.csproj'
     arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
@@ -38,8 +42,10 @@ steps:
   inputs:
     command: publish
     publishWebProjects: True
-    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+    arguments: '--configuration $(BuildConfiguration) --output /home/vsts/work/1/a/s/'
     zipAfterPublish: True
+    modifyOutputPath: true
+    
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact'
