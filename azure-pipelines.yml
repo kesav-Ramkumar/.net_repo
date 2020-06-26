@@ -1,69 +1,18 @@
+trigger:
+- master
+
+ 
+
 pool:
   vmImage: 'ubuntu-latest'
-  name: Azure Pipelines
-  demands: java
-  
+
+ 
+
 variables:
-  BuildConfiguration: 'Release'
+  buildConfiguration: 'Release'
+
+ 
 
 steps:
-- task: DotNetCoreCLI@2
-  displayName: Restore
-  inputs:
-    command: restore
-    projects: '**/*.csproj'
-
-- task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
-  displayName: 'Prepare analysis on SonarCloud'
-  inputs:
-    SonarCloud: 'azure-sonar-connection'
-    organization: kesavsonar
-    scannerMode: CLI
-    configFile: 'sonar-project.properties.xml'
-
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    projects: '**/*.csproj'
-    arguments: '--configuration $(BuildConfiguration)'
-
-- task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
-  displayName: 'Run Code Analysis'
-
-- task: DotNetCoreCLI@2
-  displayName: Test
-  inputs:
-    command: test
-    projects: '**/*.csproj'
-    arguments: '--configuration $(BuildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: Publish
-  inputs:
-    command: publish
-    publishWebProjects: True
-    arguments: '--configuration $(BuildConfiguration) --output /home/vsts/work/1/a/s/'
-    zipAfterPublish: True
-    modifyOutputPath: true
-    
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
-  inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
-  condition: succeededOrFailed()
-
-- task: JFrog.jfrog-artifactory-vsts-extension.artifactory-generic-upload.ArtifactoryGenericUpload@2
-  displayName: 'Artifactory Generic Upload'
-  inputs:
-    artifactoryService: jfrogservice
-    fileSpec: |
-     {
-       "files": [
-         {
-           "pattern": "$(Build.ArtifactStagingDirectory)/",
-           "target": "nuget-local/files"
-         }
-       ]
-     }
-
+- script: dotnet build --configuration $(buildConfiguration)
+  displayName: 'dotnet build $(buildConfiguration)'
